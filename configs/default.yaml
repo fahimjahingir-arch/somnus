@@ -1,0 +1,41 @@
+# Somnus default experiment configuration
+run_name: transformer-fpzcz
+
+data:
+  # 44 people aged 25-101: Sleep-EDF subjects 0-23 (mostly 25-35, plus 50s),
+  # 39-48 (60s-70s) and 58-67 (85-101), so the test set spans the whole adult lifespan.
+  subjects: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23,
+             39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67]
+  recordings: [1, 2]          # both nights per subject when available
+  channel: "EEG Fpz-Cz"
+  l_freq: 0.3                 # band-pass (Hz)
+  h_freq: 35.0
+  edge_minutes: 30            # wake kept before sleep onset / after final awakening
+  raw_dir: null               # null = MNE default (~/mne_data)
+  processed_dir: data/processed
+
+split:                         # subject-wise: no person appears in more than one split
+  val_subjects: 4
+  test_subjects: 8            # stratified by age group (<40, 40-64, 65-79, 80+)
+  seed: 7
+
+model:
+  d_model: 128
+  n_heads: 4
+  n_layers: 2
+  dropout: 0.1
+  seq_len: 21                 # 21 x 30 s = 10.5 minutes of context per prediction
+
+train:
+  epochs: 25
+  batch_size: 32
+  lr: 0.001
+  weight_decay: 0.01
+  warmup_epochs: 2
+  train_stride: 21            # non-overlapping windows, randomly shifted each pass
+  patience: 6
+  seed: 7
+
+eval:
+  stride: 5                   # sliding-window stride for overlapping-logit averaging
+  reliability_bins: 15
